@@ -14,7 +14,7 @@
   "publisher": "SwitchCase",
   "repository": {
     "type": "git",
-    "url": "https://github.com/IIFabixn/code-challange-timer"
+    "url": "https://github.com/IIFabixn/code-challenge-timer"
   },
   "activationEvents": [],
   "main": "./out/extension.js",
