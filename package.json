@@ -1,0 +1,84 @@
+{
+  "name": "code-challenging-timer",
+  "displayName": "Code Challenging Timer",
+  "description": "Set yourself a time limit and try to beat it.",
+  "version": "0.2.0",
+  "engines": {
+    "vscode": "^1.78.0"
+  },
+  "license": "MIT",
+  "categories": [
+    "Other"
+  ],
+  "icon": "assets/logo.png",
+  "publisher": "SwitchCase",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/IIFabixn/code-challange-timer"
+  },
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "code-challange-timer.createChallange",
+        "title": "Create a new timed challange"
+      },
+      {
+        "command": "code-challange-timer.startChallange",
+        "title": "Start the current challange"
+      },
+      {
+        "command": "code-challange-timer.cancelChallange",
+        "title": "Cancel the current challange"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Code Challange Timer",
+      "properties": {
+        "timeLimits": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[0-9]+$",
+            "description": "The time limits for the current challenge in minutes"
+          },
+          "description": "The time limits for the current challenge in minutes",
+          "default": [
+            "5",
+            "10",
+            "30",
+            "60"
+          ]
+        },
+        "snoozeDuration": {
+          "type": "number",
+          "description": "The time in minutes to snooze after the current challenge",
+          "default": 5
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "yarn run compile && yarn run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.78.0",
+    "@types/glob": "^8.1.0",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "16.x",
+    "@typescript-eslint/eslint-plugin": "^5.59.1",
+    "@typescript-eslint/parser": "^5.59.1",
+    "eslint": "^8.39.0",
+    "glob": "^8.1.0",
+    "mocha": "^10.2.0",
+    "typescript": "^5.0.4",
+    "@vscode/test-electron": "^2.3.0"
+  }
+}
