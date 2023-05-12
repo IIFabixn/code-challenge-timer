@@ -1,6 +1,6 @@
 # Codeing Challange Timer
 Spice up your conding task with a thrilling challenge.<br>
-Set up the timer and try to finish your task in time.. otherwise :boom: 
+Set up the timer and try to finish your task in time.. otherwise 🤯
 
 ## Set up a timed challenge
 1. Open Command Palet and type `createChallange`
@@ -18,3 +18,5 @@ Set up the timer and try to finish your task in time.. otherwise :boom:
 * `code-challange-timer.snoozeTime`: Sets to snooze time.
 
 **Enjoy!**
+
+#### 🤯 GitHub: [IIFabixn](https://github.com/IIFabixn) <br> 😎 Marketplace: [SwitchCase](https://marketplace.visualstudio.com/publishers/SwitchCase)
