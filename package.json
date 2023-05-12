@@ -2,7 +2,7 @@
   "name": "code-challenging-timer",
   "displayName": "Code Challenging Timer",
   "description": "Set yourself a time limit and try to beat it.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "engines": {
     "vscode": "^1.78.0"
   },
