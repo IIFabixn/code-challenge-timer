@@ -4,17 +4,23 @@ import * as timer from 'timers';
 export function activate(context: vscode.ExtensionContext) {
 	let challangeTimer: NodeJS.Timeout;
 	let challangeDuration: number;
-	let snoozeAlert: number;
-	let didSnooze: boolean = false;
+	let initzialChallangeDuration: number;
 	let durationText: vscode.StatusBarItem;
 	let startButton: vscode.StatusBarItem;
+	let stopButton: vscode.StatusBarItem;
 	let cancelButton: vscode.StatusBarItem;
 
+	const config = vscode.workspace.getConfiguration('codechallengetimer');
+	let messages = config.get<{ startMessages: string[], endMessages: string[], halfwayMessages: string[], cancelMessages: string[] }>('messages'); 
+	let allowSnooze = config.get<boolean>('allowSnooze');
+	let snoozeDuration = config.get<number>('snoozeDuration');
+	let snoozeBeforeEnd = config.get<number>('snoozeBeforeEnd');
+	let snoozeAmount = config.get<number>('snoozeAmount') ?? 1;
+	
 	//#region commands
 	vscode.commands.registerCommand('code-challange-timer.createChallange', () => setupChallange());
-
 	vscode.commands.registerCommand('code-challange-timer.startChallange', () => startTimer());
-
+	vscode.commands.registerCommand('code-challange-timer.stopChallange', () => stopTimer());
 	vscode.commands.registerCommand('code-challange-timer.cancelChallange', () => cancelTimer());
 	//#endregion
 
@@ -24,11 +30,10 @@ export function activate(context: vscode.ExtensionContext) {
 		if (durationText) durationText.dispose();
 		if (cancelButton) cancelButton.dispose();
 		if (startButton) startButton.dispose();
-		if (didSnooze) didSnooze = false;
+		if (stopButton) stopButton.dispose();
 
-
-		const config = vscode.workspace.getConfiguration();
-		let durations: string[] = config.get('timeLimits') as string[];
+		let durations: string[] = config.get<string[]>('timeLimits') as string[];
+		
 		durations.push('Other');
 
 		vscode.window.showQuickPick(durations, { placeHolder: 'Select a limit' }).then(async (selection) => {
@@ -37,11 +42,10 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 
 			if (selection === 'Other') {
-				let customDuration = await vscode.window.showInputBox({ placeHolder: 'Enter a limit in minutes' })
+				let customDuration = await vscode.window.showInputBox({ placeHolder: 'Enter a limit in minutes' });
 				
 				if (customDuration === undefined || customDuration === '' || isNaN(parseInt(customDuration))
 					|| parseInt(customDuration) < 0 || parseInt(customDuration) > Number.MAX_VALUE) {
-					console.log('invalid input');
 					return;
 				}
 
@@ -50,8 +54,8 @@ export function activate(context: vscode.ExtensionContext) {
 			else {
 				challangeDuration = parseInt(selection) * 60;
 			}
-
-			snoozeAlert = challangeDuration * 10 / 100;
+			
+			initzialChallangeDuration = challangeDuration;
 
 			// create a cancel button
 			cancelButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100);
@@ -61,7 +65,7 @@ export function activate(context: vscode.ExtensionContext) {
 			cancelButton.show();
 
 			// create a start button
-			startButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+			startButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98);
 			startButton.text = `$(debug-start) ${challangeDuration / 60} minutes challage`;
 			startButton.command = "code-challange-timer.startChallange";
 			startButton.tooltip = "Start Challange";
@@ -79,17 +83,29 @@ export function activate(context: vscode.ExtensionContext) {
 	function startTimer(snoozed:boolean = false): void {
 		startButton.dispose();
 
+		// create a stop button
+		stopButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
+		stopButton.text = `$(debug-stop)`;
+		stopButton.command = "code-challange-timer.stopChallange";
+		stopButton.tooltip = "Stop Challange";
+		stopButton.show();
+
 		durationText = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99);
 		durationText.text = "starting...";
 		durationText.show();
 
 		// setup timer interval
 		challangeTimer = timer.setInterval(() => {
-			if (challangeDuration === snoozeAlert && !didSnooze )	{
-				vscode.window.showInformationMessage('10% of the time remaining', 'Snooze').then((selection) => {
-					if (selection === 'Snooze') {
-						challangeDuration += vscode.workspace.getConfiguration().get('snoozeDuration') as number * 60;
-						didSnooze = true;
+			if (challangeDuration === initzialChallangeDuration / 2)
+			{
+				const halfTimeText = messages?.halfwayMessages ?? ['Halfway there'];
+				vscode.window.showInformationMessage(halfTimeText[Math.floor(Math.random() * halfTimeText.length)]);
+			}
+			if (allowSnooze && snoozeAmount > 0 && challangeDuration === snoozeBeforeEnd) {
+				vscode.window.showInformationMessage('Time is almost up.', 'Snooze?').then((selection) => {
+					if (selection === 'Snooze?') {
+						challangeDuration += (snoozeDuration ?? 60);
+						snoozeAmount--;
 					}
 				});
 			}
@@ -97,26 +113,34 @@ export function activate(context: vscode.ExtensionContext) {
 				updateTimer();
 				challangeDuration--;
 			} else {
-				timer.clearInterval(challangeTimer);
-				durationText.dispose();
-				cancelButton.dispose();
-				didSnooze = false;
-				vscode.commands.executeCommand('workbench.action.closeActiveEditor');
-				vscode.window.showInformationMessage('Time is up!');
+				stopTimer();
 			}
 		}, 1000);
 
-		vscode.window.showInformationMessage(snoozed ? 'Just 5 more minutes.. zZz' : 'Challenged Started');
+		const startText = messages?.startMessages ?? ['Challanged Started'];
+		vscode.window.showInformationMessage(startText[Math.floor(Math.random() * startText.length)]);
+	}
+
+	/** Stops the timer. */
+	function stopTimer(): void {
+		if (startButton) startButton.dispose();
+		if (stopButton) stopButton.dispose();
+		timer.clearInterval(challangeTimer);
+
+		const endText = messages?.endMessages ?? ['Challenge Ended'];
+		vscode.window.showInformationMessage(endText[Math.floor(Math.random() * endText.length)]);
 	}
 
 	/** Cancels the timer and disposes all active StatusBarItem. */
 	function cancelTimer(): void {
-		if (startButton) startButton.dispose();
+		if (startButton) startButton.dispose(); 
 		if (durationText) durationText.dispose();
 		if (cancelButton) cancelButton.dispose();
+		if (stopButton) stopButton.dispose();
 		timer.clearInterval(challangeTimer);
 
-		vscode.window.showInformationMessage('Challenged Canceled');
+		const cancelMessages= messages?.cancelMessages ?? ['Challenge Canceled'];
+		vscode.window.showInformationMessage(cancelMessages?.[Math.floor(Math.random() * cancelMessages.length)]);
 	}
 
 	/** Updates the StatusBarItem that contains the remaining duration. */

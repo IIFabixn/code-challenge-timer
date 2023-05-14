@@ -29,22 +29,23 @@
         "title": "Start the current challange"
       },
       {
+        "command": "code-challange-timer.stopChallange",
+        "title": "Stop the current challange"
+      },
+      {
         "command": "code-challange-timer.cancelChallange",
         "title": "Cancel the current challange"
       }
     ],
     "configuration": {
-      "type": "object",
       "title": "Code Challange Timer",
       "properties": {
-        "timeLimits": {
+        "codechallengetimer.timeLimits": {
+          "description": "The time limits for the current challenge in minutes",
           "type": "array",
           "items": {
-            "type": "string",
-            "pattern": "^[0-9]+$",
-            "description": "The time limits for the current challenge in minutes"
+            "type": "string"
           },
-          "description": "The time limits for the current challenge in minutes",
           "default": [
             "5",
             "10",
@@ -52,10 +53,78 @@
             "60"
           ]
         },
-        "snoozeDuration": {
+        "codechallengetimer.snoozeAmount": {
+          "type": "number",
+          "description": "How often do you want to snooze?",
+          "default": 5
+        },
+        "codechallengetimer.snoozeBeforeEnd": {
+          "type": "number",
+          "description": "When should the snooze alert appear before times up? (in seconds)",
+          "default": 20
+        },
+        
+        "codechallengetimer.snoozeDuration": {
           "type": "number",
           "description": "The time in minutes to snooze after the current challenge",
-          "default": 5
+          "default": 25
+        },
+        "codechallengetimer.allowSnooze": {
+          "type": "boolean",
+          "description": "Should you be able to snooze when the time is running out?",
+          "default": true
+        },
+        "codechallengetimer.messages": {
+          "type": "object",
+          "default": {
+            "startMessages": [
+              "Let's go!",
+              "Good luck!",
+              "You can do it!",
+              "You got this!"
+            ],
+            "endMessages": [
+              "Time's up!",
+              "You did it!",
+              "Well done!",
+              "Great job!"
+            ],
+            "halfwayMessages": [
+              "Halfway there!",
+              "Keep going!",
+              "You're doing great!",
+              "Did you missed a semicolon?"
+            ],
+            "cancelMessages": [
+              "Challenge canceled!"
+            ]
+          },
+          "properties": {
+            "startMessages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "endMessages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "halfwayMessages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "cancelMessages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     }
